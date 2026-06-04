@@ -1,0 +1,11 @@
+{
+  "name": "LivePulse",
+  "description": "Real-time city incident reporting and community alerts system with AI-powered duplication, categorization, and local map alerts.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

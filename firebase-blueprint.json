@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user profile record linked to Firebase Authentication.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "User unique identifier from Firebase Auth"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User screen display name"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account registration timestamp"
+        }
+      },
+      "required": ["uid", "displayName", "createdAt"]
+    },
+    "Incident": {
+      "title": "Incident",
+      "description": "A student/citizen reported crowd-sourced local crisis incident.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "category": { "type": "string" },
+        "customCategory": { "type": "string" },
+        "description": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "status": { "type": "string" },
+        "userId": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "trueVotes": { "type": "integer" },
+        "falseVotes": { "type": "integer" },
+        "isDuplicate": { "type": "boolean" }
+      },
+      "required": ["id", "category", "description", "lat", "lng", "status", "timestamp", "trueVotes", "falseVotes", "isDuplicate"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A comment posted under a civic incident.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "incidentId": { "type": "integer" },
+        "userFingerprint": { "type": "string" },
+        "displayName": { "type": "string" },
+        "body": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "incidentId", "userFingerprint", "displayName", "body", "createdAt"]
+    },
+    "Vote": {
+      "title": "Vote",
+      "description": "A verification vote to mark an incident as Real or Fake.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "incidentId": { "type": "integer" },
+        "userFingerprint": { "type": "string" },
+        "vote": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "incidentId", "userFingerprint", "vote", "createdAt"]
+    },
+    "Problem": {
+      "title": "Problem",
+      "description": "A user-reported platform feedback or technical issue.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userFingerprint": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userFingerprint", "description", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profiles keyed by their authenticating Firebase User ID."
+    },
+    "/incidents/{incidentId}": {
+      "schema": "Incident",
+      "description": "Stores crowd-sourced local alerts and public incidents."
+    },
+    "/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Stores community comments under active incidents."
+    },
+    "/votes/{voteId}": {
+      "schema": "Vote",
+      "description": "Stores crowd-sourced verification check marks."
+    },
+    "/problems/{problemId}": {
+      "schema": "Problem",
+      "description": "Stores user feedback and issues reported."
+    }
+  }
+}

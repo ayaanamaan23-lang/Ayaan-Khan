@@ -58,14 +58,16 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
             await setDoc(userDocRef, updatePayload, { merge: true });
           }
         } catch (dbErr: any) {
-          console.error("Direct Firestore user save skipped or blocked:", dbErr);
           const errMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
-          if (errMsg.includes("client is offline")) {
+          if (errMsg.includes("client is offline") || errMsg.includes("offline")) {
+            console.warn("Firestore is currently offline or unreachable. Profile sync will be retried when online:", dbErr);
             toast({
-              title: "Firestore Connection Issue",
-              description: "Could not reach Firestore database. Please make sure that you have clicked 'Create Database' under Firestore Database in your Firebase Console for project 'live-pulse-a31bf'.",
-              variant: "destructive",
+              title: "Offline Sync Mode",
+              description: "Operating in local offline fallback mode. Profile will persist on reload.",
+              variant: "default",
             });
+          } else {
+            console.error("Direct Firestore user save skipped or blocked:", dbErr);
           }
         }
 

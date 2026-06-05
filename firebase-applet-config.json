@@ -1,10 +1,10 @@
 {
-  "projectId": "live-pulse-a31bf",
-  "appId": "1:314670604839:web:4b9c3160c77f8d60952402",
-  "apiKey": "AIzaSyALlbObahF9g_BC2KFT5qIuYqnAm_DDhug",
-  "authDomain": "live-pulse-a31bf.firebaseapp.com",
+  "projectId": "livepulse-2851c",
+  "appId": "1:1059090394788:web:a950f81f4c70ca5ed58031",
+  "apiKey": "AIzaSyCu4y_OUh2QKAuij8GjbJWpkiPwmUzLzSU",
+  "authDomain": "livepulse-2851c.firebaseapp.com",
   "firestoreDatabaseId": "(default)",
-  "storageBucket": "live-pulse-a31bf.firebasestorage.app",
-  "messagingSenderId": "314670604839",
-  "databaseURL": "https://live-pulse-a31bf-default-rtdb.firebaseio.com"
+  "storageBucket": "livepulse-2851c.firebasestorage.app",
+  "messagingSenderId": "1059090394788",
+  "databaseURL": "https://livepulse-2851c-default-rtdb.firebaseio.com"
 }

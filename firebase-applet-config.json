@@ -1,10 +1,10 @@
 {
-  "projectId": "static-point-h8gvj",
-  "appId": "1:715982188903:web:a553d6cc3a1b1533b5bfc2",
-  "apiKey": "AIzaSyCAow3ql2mG7PLx-CLTbjLxWn62roSRbH0",
-  "authDomain": "static-point-h8gvj.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-376550db-5421-4764-806c-937930ad808d",
-  "storageBucket": "static-point-h8gvj.firebasestorage.app",
-  "messagingSenderId": "715982188903",
-  "measurementId": ""
+  "projectId": "live-pulse-a31bf",
+  "appId": "1:314670604839:web:4b9c3160c77f8d60952402",
+  "apiKey": "AIzaSyALlbObahF9g_BC2KFT5qIuYqnAm_DDhug",
+  "authDomain": "live-pulse-a31bf.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "live-pulse-a31bf.firebasestorage.app",
+  "messagingSenderId": "314670604839",
+  "databaseURL": "https://live-pulse-a31bf-default-rtdb.firebaseio.com"
 }

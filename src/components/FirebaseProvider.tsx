@@ -57,8 +57,16 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
             }
             await setDoc(userDocRef, updatePayload, { merge: true });
           }
-        } catch (dbErr) {
+        } catch (dbErr: any) {
           console.error("Direct Firestore user save skipped or blocked:", dbErr);
+          const errMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+          if (errMsg.includes("client is offline")) {
+            toast({
+              title: "Firestore Connection Issue",
+              description: "Could not reach Firestore database. Please make sure that you have clicked 'Create Database' under Firestore Database in your Firebase Console for project 'live-pulse-a31bf'.",
+              variant: "destructive",
+            });
+          }
         }
 
         // Ensure database registration by pinging PUT /api/users/profile in the background

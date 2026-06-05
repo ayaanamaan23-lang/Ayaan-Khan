@@ -87,8 +87,10 @@ try {
   if (fs.existsSync(firebaseConfigPath)) {
     const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf8"));
     const firebaseApp = initializeApp(firebaseConfig);
-    db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
-    console.log(`[Firebase] Server-side Firestore configured using ID: ${firebaseConfig.firestoreDatabaseId}`);
+    db = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)"
+      ? getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(firebaseApp);
+    console.log(`[Firebase] Server-side Firestore configured using ID: ${firebaseConfig.firestoreDatabaseId || "(default)"}`);
   } else {
     console.warn("[Firebase] Config file not found, running exclusively on database state.");
   }

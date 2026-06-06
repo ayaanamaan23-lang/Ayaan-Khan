@@ -349,6 +349,12 @@ app.get(["/api/health", "/api/healthz"], (req, res) => {
   res.json({ status: "ok" });
 });
 
+// GET /ads.txt - AdSense verification
+app.get("/ads.txt", (req, res) => {
+  res.type("text/plain");
+  res.send("google.com, pub-1856237366289697, DIRECT, f08c47fec0942fa0");
+});
+
 // GET /api/incidents - List all incidents
 app.get("/api/incidents", (req, res) => {
   const lat = req.query.lat ? parseFloat(req.query.lat as string) : null;

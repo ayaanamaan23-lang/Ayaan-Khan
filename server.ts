@@ -70,6 +70,7 @@ interface DBState {
   comments: Comment[];
   users: User[];
   problems: Problem[];
+  maintenance: boolean;
 }
 
 let dbState: DBState = {
@@ -78,6 +79,7 @@ let dbState: DBState = {
   comments: [],
   users: [],
   problems: [],
+  maintenance: false,
 };
 
 // ── FIREBASE BACKEND SYNCHRONIZATION ──────────────────────────────────────────
@@ -198,9 +200,37 @@ async function syncFromFirestore() {
       console.warn("[Firebase] Could not sync problems collection:", pe);
     }
 
+    // Config / Maintenance state
+    try {
+      const configSnapshot = await getDocs(collection(db, "config"));
+      configSnapshot.forEach((docSnap) => {
+        if (docSnap.id === "maintenance") {
+          const data = docSnap.data();
+          dbState.maintenance = !!data.active;
+          console.log(`[Firebase] Loaded maintenance mode state from Firestore: ${dbState.maintenance}`);
+        }
+      });
+    } catch (err) {
+      console.warn("[Firebase] Could not sync config/maintenance from Firestore:", err);
+    }
+
     saveDB();
   } catch (error) {
     console.warn("[Firebase] Could not sync database state with Firestore:", error);
+  }
+}
+
+async function persistMaintenance(active: boolean) {
+  if (db) {
+    try {
+      await setDoc(doc(db, "config", "maintenance"), {
+        active,
+        updatedAt: new Date().toISOString()
+      });
+      console.log(`[Firebase] Saved maintenance state to Firestore: ${active}`);
+    } catch (err) {
+      console.warn("[Firebase] Could not save maintenance state to Firestore:", err);
+    }
   }
 }
 
@@ -234,6 +264,7 @@ function seedDB() {
   dbState.votes = [];
   dbState.comments = [];
   dbState.users = [];
+  dbState.maintenance = false;
   saveDB();
 }
 
@@ -242,6 +273,9 @@ function loadDB() {
     if (fs.existsSync(DB_FILE)) {
       const data = fs.readFileSync(DB_FILE, "utf8");
       dbState = JSON.parse(data);
+      if (dbState.maintenance === undefined) {
+        dbState.maintenance = false;
+      }
       // Clean out legacy seeded users/data immediately on boot
       if (dbState.users.some(u => u.fingerprint === "usr_seed_1" || u.fingerprint === "usr_seed_2")) {
         console.log("[DB] Flushed legacy fake seeds to keep database completely authentic.");
@@ -931,6 +965,31 @@ app.put("/api/users/profile", (req, res) => {
   });
 });
 
+// GET /api/maintenance - Get maintenance mode status
+app.get("/api/maintenance", (req, res) => {
+  res.json({ maintenance: !!dbState.maintenance });
+});
+
+// POST /api/admin/maintenance - Toggle maintenance mode (restrict to admin email)
+app.post("/api/admin/maintenance", async (req, res) => {
+  const { email, active } = req.body;
+  if (!email || (email !== "ayaanamaan23@gmail.com" && process.env.NODE_ENV === "production")) {
+    res.status(403).json({ error: "Access denied. Private admin access only." });
+    return;
+  }
+
+  if (active === undefined) {
+    res.status(400).json({ error: "Missing active parameter" });
+    return;
+  }
+
+  dbState.maintenance = !!active;
+  saveDB();
+  await persistMaintenance(dbState.maintenance);
+
+  res.json({ success: true, maintenance: dbState.maintenance });
+});
+
 // GET /api/admin/stats - Admin Dashboard stats (restrict to admin email)
 app.get("/api/admin/stats", (req, res) => {
   const email = req.query.email as string;
@@ -959,7 +1018,8 @@ app.get("/api/admin/stats", (req, res) => {
     activeToday,
     reportsToday,
     problems: dbState.problems || [],
-    users: dbState.users || []
+    users: dbState.users || [],
+    maintenance: !!dbState.maintenance
   });
 });
 

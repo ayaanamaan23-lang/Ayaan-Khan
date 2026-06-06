@@ -13,6 +13,7 @@ import BottomNav from "@/components/BottomNav";
 import NotFound from "@/pages/not-found";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import LoginPage from "@/pages/LoginPage";
+import MaintenanceScreen from "@/components/MaintenanceScreen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,13 +26,38 @@ const queryClient = new QueryClient({
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useFirebase();
+  const [maintenance, setMaintenance] = React.useState(false);
+  const [checking, setChecking] = React.useState(true);
 
-  if (loading) {
+  const checkMaintenance = React.useCallback(() => {
+    setChecking(true);
+    fetch("/api/maintenance")
+      .then((res) => res.json())
+      .then((data) => {
+        setMaintenance(!!data.maintenance);
+      })
+      .catch((err) => console.error("Error fetching maintenance status:", err))
+      .finally(() => {
+        setChecking(false);
+      });
+  }, []);
+
+  React.useEffect(() => {
+    if (user) {
+      checkMaintenance();
+    } else {
+      setChecking(false);
+    }
+  }, [user, checkMaintenance]);
+
+  if (loading || (checking && user)) {
     return (
       <div className="flex items-center justify-center min-h-screen w-full" style={{ background: "#0d0d12" }}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-white/40 font-semibold tracking-wide">Connecting securely...</p>
+          <p className="text-xs text-white/40 font-semibold tracking-wide flex items-center gap-2">
+            Loading security layer...
+          </p>
         </div>
       </div>
     );
@@ -41,7 +67,23 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     return <LoginPage />;
   }
 
-  return <>{children}</>;
+  const isAdmin = user.email === "ayaanamaan23@gmail.com";
+  
+  if (maintenance && !isAdmin) {
+    return <MaintenanceScreen onCheckStatus={checkMaintenance} isChecking={checking} />;
+  }
+
+  return (
+    <>
+      {maintenance && isAdmin && (
+        <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 text-center text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center justify-center gap-2 z-50">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+          <span>Maintenance Mode Active (Regular users locked out)</span>
+        </div>
+      )}
+      {children}
+    </>
+  );
 }
 
 function AppShell() {

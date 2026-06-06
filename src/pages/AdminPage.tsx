@@ -64,6 +64,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"problems" | "users">("problems");
   const [searchQuery, setSearchQuery] = useState("");
+  const [maintenance, setMaintenance] = useState(false);
+  const [togglingMaintenance, setTogglingMaintenance] = useState(false);
 
   // Guard routing unless email matches the admin account
   const isAdmin = user?.email === "ayaanamaan23@gmail.com";
@@ -87,6 +89,7 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json();
         setStats(data);
+        setMaintenance(!!data.maintenance);
       } else {
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to retrieve stats");
@@ -99,6 +102,45 @@ export default function AdminPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleMaintenance = async () => {
+    if (!user?.email || togglingMaintenance) return;
+    try {
+      setTogglingMaintenance(true);
+      const nextState = !maintenance;
+      const res = await fetch("/api/admin/maintenance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          active: nextState,
+        }),
+      });
+
+      if (res.ok) {
+        setMaintenance(nextState);
+        toast({
+          title: nextState ? "Maintenance Lock Active" : "Maintenance Lock Removed",
+          description: nextState
+            ? "Site has been closed to standard users. Maintenance screen is now visible."
+            : "Site has been opened back up to standard users.",
+        });
+      } else {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update configuration.");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Configuration Failed",
+        description: err.message || "Failed to toggle maintenance mode.",
+        variant: "destructive",
+      });
+    } finally {
+      setTogglingMaintenance(false);
     }
   };
 
@@ -214,6 +256,57 @@ export default function AdminPage() {
               <div className="text-[8px] text-white/20 mt-1">Today's Alerts</div>
             </motion.div>
           </div>
+
+          {/* Maintenance Lock / Control Panel */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="glass-card rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className={`w-3 h-3 rounded-full ${maintenance ? 'bg-amber-500 animate-pulse ring-4 ring-amber-500/15' : 'bg-emerald-500 ring-4 ring-emerald-500/15'}`} />
+                <div>
+                  <h3 className="text-xs font-bold tracking-wide text-white">
+                    Maintained Option (سائٹ بند کریں)
+                  </h3>
+                  <p className="text-[10px] text-white/40 mt-0.5">
+                    Toggle active downtime lock instantly
+                  </p>
+                </div>
+              </div>
+              
+              {/* Custom Toggle Switch */}
+              <button
+                type="button"
+                onClick={handleToggleMaintenance}
+                disabled={togglingMaintenance}
+                className={`w-11 h-6 rounded-full p-0.5 transition-colors relative duration-300 focus:outline-none cursor-pointer ${
+                  maintenance ? "bg-amber-500" : "bg-white/10"
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-300 ${
+                    maintenance ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="text-[10px] text-white/50 leading-relaxed bg-white/[0.01] p-2.5 rounded-xl border border-white/[0.03]">
+              {maintenance ? (
+                <span className="text-amber-400 font-medium">
+                  ⚠️ <strong>Sait Band Hai (Active):</strong> Logged-in citizen accounts are securely locked on an informational under-maintenance page. Admin is permitted to bypass the lock for easy toggle toggling.
+                </span>
+              ) : (
+                <span className="text-white/60">
+                  🟢 <strong>Chalu Hai (Operational):</strong> All users can normally access, report incidents, submit comments, and explore maps without interruption.
+                </span>
+              )}
+            </div>
+          </motion.div>
 
           {/* Tab Switchers */}
           <div className="flex rounded-xl p-1 bg-white/[0.04]" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
